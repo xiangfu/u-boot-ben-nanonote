@@ -172,6 +172,12 @@ void board_init_f(ulong bootflag)
 	addr &= ~(4096 - 1);
 	debug("Top of RAM usable for U-Boot at: %08lx\n", addr);
 
+#ifdef CONFIG_LCD
+        /* reserve memory for LCD display (always full pages) */
+        addr = lcd_setmem (addr);
+        gd->fb_base = addr;
+#endif /* CONFIG_LCD */
+
 	/* Reserve memory for U-Boot code, data & bss
 	 * round down to next 16 kB limit
 	 */

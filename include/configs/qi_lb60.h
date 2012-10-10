@@ -32,6 +32,13 @@
  * Miscellaneous configurable options
  */
 #define CONFIG_NANONOTE
+
+#define CONFIG_LCD
+#define CONFIG_SYS_WHITE_ON_BLACK
+#define LCD_BPP			LCD_COLOR32
+#define CONFIG_VIDEO_GPM940B0
+
+
 #define CONFIG_JZ4740_MMC
 #define CONFIG_MMC      	1
 #define CONFIG_FAT      	1

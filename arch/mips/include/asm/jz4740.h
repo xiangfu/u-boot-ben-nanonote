@@ -1312,5 +1312,95 @@ do { 								\
  	while (REG_MSC_STAT & MSC_STAT_IS_RESETTING);		\
 } while (0)
 
+/*************************************************************************
+ * LCD (LCD Controller)
+ *************************************************************************/
+#define REG32(addr)	*((volatile u32 *)(addr))
+
+#define	CPM_BASE	0xB0000000
+#define CPM_CPCCR	(CPM_BASE+0x00)
+#define REG_CPM_CPCCR	REG32(CPM_CPCCR)
+
+#define	LCD_BASE	0xB3050000
+#define LCD_CFG		(LCD_BASE + 0x00) /* LCD Configure Register */
+#define LCD_VSYNC	(LCD_BASE + 0x04) /* Vertical Synchronize Register */
+#define LCD_HSYNC	(LCD_BASE + 0x08) /* Horizontal Synchronize Register */
+#define LCD_VAT		(LCD_BASE + 0x0c) /* Virtual Area Setting Register */
+#define LCD_DAH		(LCD_BASE + 0x10) /* Display Area Horizontal Start/End Point */
+#define LCD_DAV		(LCD_BASE + 0x14) /* Display Area Vertical Start/End Point */
+#define LCD_PS		(LCD_BASE + 0x18) /* PS Signal Setting */
+#define LCD_CLS		(LCD_BASE + 0x1c) /* CLS Signal Setting */
+#define LCD_SPL		(LCD_BASE + 0x20) /* SPL Signal Setting */
+#define LCD_REV		(LCD_BASE + 0x24) /* REV Signal Setting */
+#define LCD_CTRL	(LCD_BASE + 0x30) /* LCD Control Register */
+#define LCD_STATE	(LCD_BASE + 0x34) /* LCD Status Register */
+#define LCD_IID		(LCD_BASE + 0x38) /* Interrupt ID Register */
+#define LCD_DA0		(LCD_BASE + 0x40) /* Descriptor Address Register 0 */
+#define LCD_SA0		(LCD_BASE + 0x44) /* Source Address Register 0 */
+#define LCD_FID0	(LCD_BASE + 0x48) /* Frame ID Register 0 */
+#define LCD_CMD0	(LCD_BASE + 0x4c) /* DMA Command Register 0 */
+#define LCD_DA1		(LCD_BASE + 0x50) /* Descriptor Address Register 1 */
+#define LCD_SA1		(LCD_BASE + 0x54) /* Source Address Register 1 */
+#define LCD_FID1	(LCD_BASE + 0x58) /* Frame ID Register 1 */
+#define LCD_CMD1	(LCD_BASE + 0x5c) /* DMA Command Register 1 */
+
+#define REG_LCD_CFG	REG32(LCD_CFG)
+#define REG_LCD_VSYNC	REG32(LCD_VSYNC)
+#define REG_LCD_HSYNC	REG32(LCD_HSYNC)
+#define REG_LCD_VAT	REG32(LCD_VAT)
+#define REG_LCD_DAH	REG32(LCD_DAH)
+#define REG_LCD_DAV	REG32(LCD_DAV)
+#define REG_LCD_PS	REG32(LCD_PS)
+#define REG_LCD_CLS	REG32(LCD_CLS)
+#define REG_LCD_SPL	REG32(LCD_SPL)
+#define REG_LCD_REV	REG32(LCD_REV)
+#define REG_LCD_CTRL	REG32(LCD_CTRL)
+#define REG_LCD_STATE	REG32(LCD_STATE)
+#define REG_LCD_IID	REG32(LCD_IID)
+#define REG_LCD_DA0	REG32(LCD_DA0)
+#define REG_LCD_SA0	REG32(LCD_SA0)
+#define REG_LCD_FID0	REG32(LCD_FID0)
+#define REG_LCD_CMD0	REG32(LCD_CMD0)
+#define REG_LCD_DA1	REG32(LCD_DA1)
+#define REG_LCD_SA1	REG32(LCD_SA1)
+#define REG_LCD_FID1	REG32(LCD_FID1)
+#define REG_LCD_CMD1	REG32(LCD_CMD1)
+
+#define LCD_CTRL_BPP_BIT	0  /* Bits Per Pixel */
+#define LCD_CTRL_BPP_MASK	(0x07 << LCD_CTRL_BPP_BIT)
+  #define LCD_CTRL_BPP_1	(0 << LCD_CTRL_BPP_BIT) /* 1 bpp */
+  #define LCD_CTRL_BPP_2	(1 << LCD_CTRL_BPP_BIT) /* 2 bpp */
+  #define LCD_CTRL_BPP_4	(2 << LCD_CTRL_BPP_BIT) /* 4 bpp */
+  #define LCD_CTRL_BPP_8	(3 << LCD_CTRL_BPP_BIT) /* 8 bpp */
+  #define LCD_CTRL_BPP_16	(4 << LCD_CTRL_BPP_BIT) /* 15/16 bpp */
+  #define LCD_CTRL_BPP_18_24	(5 << LCD_CTRL_BPP_BIT) /* 18/24/32 bpp */
+
+#define LCD_CTRL_BST_BIT	28  /* Burst Length Selection */
+#define LCD_CTRL_BST_MASK	(0x03 << LCD_CTRL_BST_BIT)
+  #define LCD_CTRL_BST_4	(0 << LCD_CTRL_BST_BIT) /* 4-word */
+  #define LCD_CTRL_BST_8	(1 << LCD_CTRL_BST_BIT) /* 8-word */
+  #define LCD_CTRL_BST_16	(2 << LCD_CTRL_BST_BIT) /* 16-word */
+#define LCD_CTRL_RGB565		(0 << 27) /* RGB565 mode */
+#define LCD_CTRL_RGB555		(1 << 27) /* RGB555 mode */
+#define LCD_CTRL_OFUP		(1 << 26) /* Output FIFO underrun protection enable */
+#define LCD_CTRL_FRC_BIT	24  /* STN FRC Algorithm Selection */
+#define LCD_CTRL_FRC_MASK	(0x03 << LCD_CTRL_FRC_BIT)
+  #define LCD_CTRL_FRC_16	(0 << LCD_CTRL_FRC_BIT) /* 16 grayscale */
+  #define LCD_CTRL_FRC_4	(1 << LCD_CTRL_FRC_BIT) /* 4 grayscale */
+  #define LCD_CTRL_FRC_2	(2 << LCD_CTRL_FRC_BIT) /* 2 grayscale */
+
+#define CPM_LPCDR	(CPM_BASE+0x64)
+#define CPM_CLKGR	(CPM_BASE+0x20)
+#define REG_CPM_LPCDR	REG32(CPM_LPCDR)
+#define REG_CPM_CLKGR	REG32(CPM_CLKGR)
+
+#define __cpm_start_tcu()	(REG_CPM_CLKGR &= ~CPM_CLKGR_TCU)
+#define __cpm_stop_lcd()	(REG_CPM_CLKGR |= CPM_CLKGR_LCD)
+#define __cpm_set_pixdiv(v) \
+	(REG_CPM_LPCDR = (REG_CPM_LPCDR & ~CPM_LPCDR_PIXDIV_MASK) | ((v) << (CPM_LPCDR_PIXDIV_BIT)))
+#define __cpm_set_ldiv(v) \
+	(REG_CPM_CPCCR = (REG_CPM_CPCCR & ~CPM_CPCCR_LDIV_MASK) | ((v) << (CPM_CPCCR_LDIV_BIT)))
+#define __cpm_start_lcd()	(REG_CPM_CLKGR &= ~CPM_CLKGR_LCD)
+
 #endif	/* !__ASSEMBLY__ */
 #endif	/* __JZ4740_H__ */

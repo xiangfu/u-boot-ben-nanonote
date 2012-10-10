@@ -263,6 +263,13 @@ static void lcd_drawchars(ushort x, ushort y, uchar *str, int count)
 						lcd_color_fg : lcd_color_bg;
 				bits <<= 1;
 			}
+#elif LCD_BPP == LCD_COLOR32
+                       uint *m = (uint *)d;
+                       for (c=0; c<32; ++c) {
+                               *m++ = (bits & 0x80) ?
+				       lcd_color_fg : lcd_color_bg;
+                               bits <<= 1;
+                       }
 #endif
 		}
 #if LCD_BPP == LCD_MONOCHROME
@@ -509,7 +516,7 @@ static inline ushort *configuration_get_cmap(void)
 	return (ushort *)&(cp->lcd_cmap[255 * sizeof(ushort)]);
 #elif defined(CONFIG_ATMEL_LCD)
 	return (ushort *)(panel_info.mmio + ATMEL_LCDC_LUT(0));
-#elif !defined(CONFIG_ATMEL_HLCD) && !defined(CONFIG_EXYNOS_FB)
+#elif !defined(CONFIG_ATMEL_HLCD) && !defined(CONFIG_EXYNOS_FB) && !defined(CONFIG_VIDEO_GPM940B0)
 	return panel_info.cmap;
 #else
 #if defined(CONFIG_LCD_LOGO)

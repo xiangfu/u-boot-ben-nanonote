@@ -44,6 +44,7 @@ typedef	struct	global_data {
 	unsigned long	per_clk;	/* Peripheral bus clock */
 	unsigned long	mem_clk;	/* Memory bus clock */
 	unsigned long	dev_clk;	/* Device clock */
+        unsigned long   fb_base;        /* base address of framebuffer */
 	/* "static data" needed by most of timer.c */
 	unsigned long	tbl;
 	unsigned long	lastinc;
