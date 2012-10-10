@@ -102,6 +102,8 @@
 #define CONFIG_SYS_NO_FLASH
 #define CONFIG_SYS_FLASH_BASE	0 /* init flash_base as 0 */
 
+#define CONFIG_SILENT_CONSOLE		1	/* Enable silent console */
+
 /*
  * Command line configuration
  */

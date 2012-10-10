@@ -685,6 +685,14 @@ done:
 
 	gd->flags |= GD_FLG_DEVINIT;	/* device initialization completed */
 
+#ifdef CONFIG_SILENT_CONSOLE
+	/* Check one more time the contents of the silent environment
+	 * variable, because if the environment is loaded from NAND it was
+	 * not available when console_init_f() was called */
+	if (getenv("silent") != NULL)
+		gd->flags |= GD_FLG_SILENT;
+#endif
+
 	stdio_print_current_devices();
 
 #ifdef CONFIG_SYS_CONSOLE_ENV_OVERWRITE
@@ -759,6 +767,14 @@ int console_init_r(void)
 	}
 
 	gd->flags |= GD_FLG_DEVINIT;	/* device initialization completed */
+
+#ifdef CONFIG_SILENT_CONSOLE
+	/* Check one more time the contents of the silent environment
+	 * variable, because if the environment is loaded from NAND it was
+	 * not available when console_init_f() was called */
+	if (getenv("silent") != NULL)
+		gd->flags |= GD_FLG_SILENT;
+#endif
 
 	stdio_print_current_devices();
 
