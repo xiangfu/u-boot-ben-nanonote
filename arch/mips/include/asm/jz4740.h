@@ -1146,5 +1146,171 @@ extern void sdram_init(void);
 extern void calc_clocks(void);
 extern void rtc_init(void);
 
+/*************************************************************************
+ * MSC
+ *************************************************************************/
+#define REG8(addr)	*((volatile u8 *)(addr))
+#define REG16(addr)	*((volatile u16 *)(addr))
+#define REG32(addr)	*((volatile u32 *)(addr))
+
+#define	CPM_BASE	0xB0000000
+#define CPM_CPCCR	(CPM_BASE+0x00)
+#define CPM_MSCCDR	(CPM_BASE+0x68)
+#define REG_CPM_MSCCDR	REG32(CPM_MSCCDR)
+#define REG_CPM_CPCCR	REG32(CPM_CPCCR)
+
+#define	MSC_BASE	0xB0021000
+
+#define	MSC_STRPCL		(MSC_BASE + 0x000)
+#define	MSC_STAT		(MSC_BASE + 0x004)
+#define	MSC_CLKRT		(MSC_BASE + 0x008)
+#define	MSC_CMDAT		(MSC_BASE + 0x00C)
+#define	MSC_RESTO		(MSC_BASE + 0x010)
+#define	MSC_RDTO		(MSC_BASE + 0x014)
+#define	MSC_BLKLEN		(MSC_BASE + 0x018)
+#define	MSC_NOB			(MSC_BASE + 0x01C)
+#define	MSC_SNOB		(MSC_BASE + 0x020)
+#define	MSC_IMASK		(MSC_BASE + 0x024)
+#define	MSC_IREG		(MSC_BASE + 0x028)
+#define	MSC_CMD			(MSC_BASE + 0x02C)
+#define	MSC_ARG			(MSC_BASE + 0x030)
+#define	MSC_RES			(MSC_BASE + 0x034)
+#define	MSC_RXFIFO		(MSC_BASE + 0x038)
+#define	MSC_TXFIFO		(MSC_BASE + 0x03C)
+
+#define	REG_MSC_STRPCL		REG16(MSC_STRPCL)
+#define	REG_MSC_STAT		REG32(MSC_STAT)
+#define	REG_MSC_CLKRT		REG16(MSC_CLKRT)
+#define	REG_MSC_CMDAT		REG32(MSC_CMDAT)
+#define	REG_MSC_RESTO		REG16(MSC_RESTO)
+#define	REG_MSC_RDTO		REG16(MSC_RDTO)
+#define	REG_MSC_BLKLEN		REG16(MSC_BLKLEN)
+#define	REG_MSC_NOB		REG16(MSC_NOB)
+#define	REG_MSC_SNOB		REG16(MSC_SNOB)
+#define	REG_MSC_IMASK		REG16(MSC_IMASK)
+#define	REG_MSC_IREG		REG16(MSC_IREG)
+#define	REG_MSC_CMD		REG8(MSC_CMD)
+#define	REG_MSC_ARG		REG32(MSC_ARG)
+#define	REG_MSC_RES		REG16(MSC_RES)
+#define	REG_MSC_RXFIFO		REG32(MSC_RXFIFO)
+#define	REG_MSC_TXFIFO		REG32(MSC_TXFIFO)
+
+/* MSC Clock and Control Register (MSC_STRPCL) */
+
+#define MSC_STRPCL_EXIT_MULTIPLE	(1 << 7)
+#define MSC_STRPCL_EXIT_TRANSFER	(1 << 6)
+#define MSC_STRPCL_START_READWAIT	(1 << 5)
+#define MSC_STRPCL_STOP_READWAIT	(1 << 4)
+#define MSC_STRPCL_RESET		(1 << 3)
+#define MSC_STRPCL_START_OP		(1 << 2)
+#define MSC_STRPCL_CLOCK_CONTROL_BIT	0
+#define MSC_STRPCL_CLOCK_CONTROL_MASK	(0x3 << MSC_STRPCL_CLOCK_CONTROL_BIT)
+  #define MSC_STRPCL_CLOCK_CONTROL_STOP	  (0x1 << MSC_STRPCL_CLOCK_CONTROL_BIT) /* Stop MMC/SD clock */
+  #define MSC_STRPCL_CLOCK_CONTROL_START  (0x2 << MSC_STRPCL_CLOCK_CONTROL_BIT) /* Start MMC/SD clock */
+
+/* MSC Status Register (MSC_STAT) */
+
+#define MSC_STAT_IS_RESETTING		(1 << 15)
+#define MSC_STAT_SDIO_INT_ACTIVE	(1 << 14)
+#define MSC_STAT_PRG_DONE		(1 << 13)
+#define MSC_STAT_DATA_TRAN_DONE		(1 << 12)
+#define MSC_STAT_END_CMD_RES		(1 << 11)
+#define MSC_STAT_DATA_FIFO_AFULL	(1 << 10)
+#define MSC_STAT_IS_READWAIT		(1 << 9)
+#define MSC_STAT_CLK_EN			(1 << 8)
+#define MSC_STAT_DATA_FIFO_FULL		(1 << 7)
+#define MSC_STAT_DATA_FIFO_EMPTY	(1 << 6)
+#define MSC_STAT_CRC_RES_ERR		(1 << 5)
+#define MSC_STAT_CRC_READ_ERROR		(1 << 4)
+#define MSC_STAT_CRC_WRITE_ERROR_BIT	2
+#define MSC_STAT_CRC_WRITE_ERROR_MASK	(0x3 << MSC_STAT_CRC_WRITE_ERROR_BIT)
+  #define MSC_STAT_CRC_WRITE_ERROR_NO		(0 << MSC_STAT_CRC_WRITE_ERROR_BIT) /* No error on transmission of data */
+  #define MSC_STAT_CRC_WRITE_ERROR		(1 << MSC_STAT_CRC_WRITE_ERROR_BIT) /* Card observed erroneous transmission of data */
+  #define MSC_STAT_CRC_WRITE_ERROR_NOSTS	(2 << MSC_STAT_CRC_WRITE_ERROR_BIT) /* No CRC status is sent back */
+#define MSC_STAT_TIME_OUT_RES		(1 << 1)
+#define MSC_STAT_TIME_OUT_READ		(1 << 0)
+
+/* MSC Bus Clock Control Register (MSC_CLKRT) */
+
+#define	MSC_CLKRT_CLK_RATE_BIT		0
+#define	MSC_CLKRT_CLK_RATE_MASK		(0x7 << MSC_CLKRT_CLK_RATE_BIT)
+  #define MSC_CLKRT_CLK_RATE_DIV_1	  (0x0 << MSC_CLKRT_CLK_RATE_BIT) /* CLK_SRC */
+  #define MSC_CLKRT_CLK_RATE_DIV_2	  (0x1 << MSC_CLKRT_CLK_RATE_BIT) /* 1/2 of CLK_SRC */
+  #define MSC_CLKRT_CLK_RATE_DIV_4	  (0x2 << MSC_CLKRT_CLK_RATE_BIT) /* 1/4 of CLK_SRC */
+  #define MSC_CLKRT_CLK_RATE_DIV_8	  (0x3 << MSC_CLKRT_CLK_RATE_BIT) /* 1/8 of CLK_SRC */
+  #define MSC_CLKRT_CLK_RATE_DIV_16	  (0x4 << MSC_CLKRT_CLK_RATE_BIT) /* 1/16 of CLK_SRC */
+  #define MSC_CLKRT_CLK_RATE_DIV_32	  (0x5 << MSC_CLKRT_CLK_RATE_BIT) /* 1/32 of CLK_SRC */
+  #define MSC_CLKRT_CLK_RATE_DIV_64	  (0x6 << MSC_CLKRT_CLK_RATE_BIT) /* 1/64 of CLK_SRC */
+  #define MSC_CLKRT_CLK_RATE_DIV_128	  (0x7 << MSC_CLKRT_CLK_RATE_BIT) /* 1/128 of CLK_SRC */
+
+/* MSC Command Sequence Control Register (MSC_CMDAT) */
+
+#define	MSC_CMDAT_IO_ABORT	(1 << 11)
+#define	MSC_CMDAT_BUS_WIDTH_BIT	9
+#define	MSC_CMDAT_BUS_WIDTH_MASK (0x3 << MSC_CMDAT_BUS_WIDTH_BIT)
+#define MSC_CMDAT_BUS_WIDTH_1BIT (0x0 << MSC_CMDAT_BUS_WIDTH_BIT)
+#define MSC_CMDAT_BUS_WIDTH_4BIT (0x2 << MSC_CMDAT_BUS_WIDTH_BIT)
+#define	MSC_CMDAT_DMA_EN	(1 << 8)
+#define	MSC_CMDAT_INIT		(1 << 7)
+#define	MSC_CMDAT_BUSY		(1 << 6)
+#define	MSC_CMDAT_STREAM_BLOCK	(1 << 5)
+#define	MSC_CMDAT_WRITE		(1 << 4)
+#define	MSC_CMDAT_READ		(0 << 4)
+#define	MSC_CMDAT_DATA_EN	(1 << 3)
+#define	MSC_CMDAT_RESPONSE_BIT	0
+#define	MSC_CMDAT_RESPONSE_MASK	(0x7 << MSC_CMDAT_RESPONSE_BIT)
+#define MSC_CMDAT_RESPONSE_NONE	(0x0 << MSC_CMDAT_RESPONSE_BIT)
+#define MSC_CMDAT_RESPONSE_R1	(0x1 << MSC_CMDAT_RESPONSE_BIT)
+#define MSC_CMDAT_RESPONSE_R2	(0x2 << MSC_CMDAT_RESPONSE_BIT)
+#define MSC_CMDAT_RESPONSE_R3	(0x3 << MSC_CMDAT_RESPONSE_BIT)
+#define MSC_CMDAT_RESPONSE_R4	(0x4 << MSC_CMDAT_RESPONSE_BIT)
+#define MSC_CMDAT_RESPONSE_R5	(0x5 << MSC_CMDAT_RESPONSE_BIT)
+#define MSC_CMDAT_RESPONSE_R6	(0x6 << MSC_CMDAT_RESPONSE_BIT)
+
+/* MSC Interrupts Mask Register (MSC_IMASK) */
+#define	MSC_IMASK_SDIO			(1 << 7)
+#define	MSC_IMASK_TXFIFO_WR_REQ		(1 << 6)
+#define	MSC_IMASK_RXFIFO_RD_REQ		(1 << 5)
+#define	MSC_IMASK_END_CMD_RES		(1 << 2)
+#define	MSC_IMASK_PRG_DONE		(1 << 1)
+#define	MSC_IMASK_DATA_TRAN_DONE	(1 << 0)
+
+
+/* MSC Interrupts Status Register (MSC_IREG) */
+#define	MSC_IREG_SDIO			(1 << 7)
+#define	MSC_IREG_TXFIFO_WR_REQ		(1 << 6)
+#define	MSC_IREG_RXFIFO_RD_REQ		(1 << 5)
+#define	MSC_IREG_END_CMD_RES		(1 << 2)
+#define	MSC_IREG_PRG_DONE		(1 << 1)
+#define	MSC_IREG_DATA_TRAN_DONE		(1 << 0)
+
+static __inline__ unsigned int __cpm_get_pllout2(void)
+{
+	if (REG_CPM_CPCCR & CPM_CPCCR_PCS)
+		return __cpm_get_pllout();
+	else
+		return __cpm_get_pllout()/2;
+}
+
+static inline void __cpm_select_msc_clk(int sd)
+{
+	unsigned int pllout2 = __cpm_get_pllout2();
+	unsigned int div = 0;
+
+	if (sd) {
+		div = pllout2 / 24000000;
+	}
+	else {
+		div = pllout2 / 16000000;
+	}
+
+	REG_CPM_MSCCDR = div - 1;
+}
+#define __msc_reset() 						\
+do { 								\
+	REG_MSC_STRPCL = MSC_STRPCL_RESET;			\
+ 	while (REG_MSC_STAT & MSC_STAT_IS_RESETTING);		\
+} while (0)
+
 #endif	/* !__ASSEMBLY__ */
 #endif	/* __JZ4740_H__ */

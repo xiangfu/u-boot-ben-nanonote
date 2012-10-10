@@ -31,6 +31,15 @@
 /*
  * Miscellaneous configurable options
  */
+#define CONFIG_JZ4740_MMC
+#define CONFIG_MMC      	1
+#define CONFIG_FAT      	1
+#define CONFIG_DOS_PARTITION	1
+#define CONFIG_CMD_MMC
+#define CONFIG_CMD_FAT
+#define CONFIG_CMD_EXT2
+
+
 #define CONFIG_SYS_SDRAM_BASE		0x80000000	/* Cached addr */
 #define CONFIG_SYS_INIT_SP_OFFSET	0x400000
 #define CONFIG_SYS_LOAD_ADDR		0x80600000

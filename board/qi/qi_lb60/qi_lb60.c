@@ -40,8 +40,13 @@ static void gpio_init(void)
 		__gpio_clear_pin(GPIO_KEYOUT_BASE + i);
 	}
 
-	__gpio_as_input(GPIO_KEYIN_8);
-	__gpio_enable_pull(GPIO_KEYIN_8);
+	if (__gpio_get_pin(GPIO_KEYIN_BASE + 2) == 0){
+		printf("[S] pressed, enable UART0\n");
+		__gpio_as_uart0();
+	} else {
+		__gpio_as_input(GPIO_KEYIN_8);
+		__gpio_enable_pull(GPIO_KEYIN_8);
+	}
 
 	/* enable the TP4, TP5 as UART0 */
 	__gpio_jtag_to_uart0();
