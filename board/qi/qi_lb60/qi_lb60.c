@@ -15,7 +15,7 @@ DECLARE_GLOBAL_DATA_PTR;
 
 static void gpio_init(void)
 {
-	unsigned int i;
+	unsigned int i, j;
 
 	/* Initialize NAND Flash Pins */
 	__gpio_as_nand();
@@ -42,14 +42,34 @@ static void gpio_init(void)
 
 	if (__gpio_get_pin(GPIO_KEYIN_BASE + 2) == 0){
 		printf("[S] pressed, enable UART0\n");
+		gd->boot_option |= BOOT_WITH_ENABLE_UART;
 		__gpio_as_uart0();
 	} else {
 		__gpio_as_input(GPIO_KEYIN_8);
 		__gpio_enable_pull(GPIO_KEYIN_8);
 	}
 
-	/* enable the TP4, TP5 as UART0 */
-	__gpio_jtag_to_uart0();
+	if (__gpio_get_pin(GPIO_KEYIN_BASE + 3) == 0) {
+		printf("[M] pressed, boot from memory card\n");
+		gd->boot_option |= BOOT_FROM_MEMCARD;
+		__gpio_jtag_to_uart0();
+	}
+
+	for (j = 0; j < 4; j++) {
+		for (i = 0; i < 4; i++)
+			__gpio_set_pin(GPIO_KEYOUT_BASE + i);
+
+		__gpio_clear_pin(GPIO_KEYOUT_BASE + j);
+
+		if (__gpio_get_pin(GPIO_KEYIN_BASE) == 0) {
+			printf("[F%d] pressed", (j + 1));
+			gd->boot_option |= (1 << (j + 2));
+			/* BOOT_WITH_F1	(1 << 2) */
+			/* BOOT_WITH_F2	(1 << 3) */
+			/* BOOT_WITH_F3	(1 << 4) */
+			/* BOOT_WITH_F4	(1 << 5) */
+		}
+	}
 
 	__gpio_as_output(GPIO_AUDIO_POP);
 	__gpio_set_pin(GPIO_AUDIO_POP);

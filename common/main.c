@@ -355,7 +355,11 @@ void main_loop (void)
 #if defined(CONFIG_BOOTDELAY) && (CONFIG_BOOTDELAY >= 0)
 	s = getenv ("bootdelay");
 	bootdelay = s ? (int)simple_strtol(s, NULL, 10) : CONFIG_BOOTDELAY;
-
+#if defined(CONFIG_NANONOTE)
+	DECLARE_GLOBAL_DATA_PTR;
+	if (gd->boot_option & BOOT_WITH_ENABLE_UART)
+		bootdelay = 3;
+# endif
 	debug ("### main_loop entered: bootdelay=%d\n\n", bootdelay);
 
 #if defined(CONFIG_MENU_SHOW)
@@ -379,7 +383,20 @@ void main_loop (void)
 	}
 	else
 #endif /* CONFIG_BOOTCOUNT_LIMIT */
-		s = getenv ("bootcmd");
+#if defined(CONFIG_NANONOTE)
+		if (gd->boot_option & BOOT_FROM_MEMCARD)
+			s = getenv ("bootcmdfromsd");
+		else if (gd->boot_option & BOOT_WITH_F1)
+			s = getenv ("bootcmdf1");
+		else if (gd->boot_option & BOOT_WITH_F2)
+			s = getenv ("bootcmdf2");
+		else if (gd->boot_option & BOOT_WITH_F3)
+			s = getenv ("bootcmdf3");
+		else if (gd->boot_option & BOOT_WITH_F4)
+			s = getenv ("bootcmdf4");
+		else
+#endif
+			s = getenv ("bootcmd");
 
 	debug ("### main_loop: bootcmd=\"%s\"\n", s ? s : "<UNDEFINED>");
 

@@ -47,9 +47,24 @@ int do_bootm_linux(int flag, int argc, char * const argv[],
 			bootm_headers_t *images)
 {
 	void (*theKernel) (int, char **, char **, int *);
-	char *commandline = getenv("bootargs");
+	char *commandline;
 	char env_buf[12];
 	char *cp;
+
+#if defined(CONFIG_NANONOTE)
+        if (gd->boot_option & BOOT_FROM_MEMCARD)
+                commandline = getenv ("bootargsfromsd");
+        else if (gd->boot_option & BOOT_WITH_F1)
+                commandline = getenv ("bootargsf1");
+        else if (gd->boot_option & BOOT_WITH_F2)
+                commandline = getenv ("bootargsf2");
+        else if (gd->boot_option & BOOT_WITH_F3)
+                commandline = getenv ("bootargsf3");
+        else if (gd->boot_option & BOOT_WITH_F4)
+                commandline = getenv ("bootargsf4");
+        else
+#endif
+                commandline = getenv ("bootargs");
 
 	if ((flag != 0) && (flag != BOOTM_STATE_OS_GO))
 		return 1;

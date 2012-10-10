@@ -31,6 +31,7 @@
 /*
  * Miscellaneous configurable options
  */
+#define CONFIG_NANONOTE
 #define CONFIG_JZ4740_MMC
 #define CONFIG_MMC      	1
 #define CONFIG_FAT      	1
@@ -39,6 +40,37 @@
 #define CONFIG_CMD_FAT
 #define CONFIG_CMD_EXT2
 
+#define CONFIG_CMD_UBIFS
+#define CONFIG_CMD_UBI
+#define CONFIG_MTD_PARTITIONS
+#define CONFIG_MTD_DEVICE
+#define CONFIG_CMD_MTDPARTS
+#define CONFIG_CMD_UBI
+#define CONFIG_CMD_UBIFS
+#define CONFIG_LZO
+#define CONFIG_RBTREE
+
+#define MTDIDS_DEFAULT		"nand0=jz4740-nand"
+#define MTDPARTS_DEFAULT	"mtdparts=jz4740-nand:4M@0(uboot)ro,4M@4M(kernel)ro,512M@8M(rootfs)ro,-(data)ro"
+
+#define BOOT_FROM_MEMCARD	1
+#define BOOT_WITH_ENABLE_UART	(1 << 1)	/* Vaule for global_data.h gd->boot_option */
+#define BOOT_WITH_F1		(1 << 2)
+#define BOOT_WITH_F2		(1 << 3)
+#define BOOT_WITH_F3		(1 << 4)
+#define BOOT_WITH_F4		(1 << 5)
+
+#define CONFIG_EXTRA_ENV_SETTINGS \
+	"bootcmdfromsd=mmc init; ext2load mmc 0 0x80600000 /boot/uImage; bootm;\0" \
+	"bootargsfromsd=mem=32M console=tty0 console=ttyS0,57600n8 rootfstype=ext2 root=/dev/mmcblk0p1 rw rootwait\0" \
+	"bootcmdf1=mmc init; ext2load mmc 0:1 0x80600000 /boot/uImage; bootm;\0" \
+	"bootargsf1=mem=32M console=tty0 console=ttyS0,57600n8 rootfstype=ext2 root=/dev/mmcblk0p1 rw rootwait\0" \
+	"bootcmdf2=mmc init; ext2load mmc 0:2 0x80600000 /boot/uImage; bootm;\0" \
+	"bootargsf2=mem=32M console=tty0 console=ttyS0,57600n8 rootfstype=ext2 root=/dev/mmcblk0p2 rw rootwait\0" \
+	"bootcmdf3=mmc init; ext2load mmc 0:3 0x80600000 /boot/uImage; bootm;\0" \
+	"bootargsf3=mem=32M console=tty0 console=ttyS0,57600n8 rootfstype=ext2 root=/dev/mmcblk0p3 rw rootwait\0" \
+	"bootcmdf4=mtdparts default;ubi part rootfs;ubifsmount rootfs;ubifsload 0x80600000 /boot/uImage; bootm;\0" \
+	"bootargsf4=mem=32M console=tty0 console=ttyS0,57600n8 ubi.mtd=2 rootfstype=ubifs root=ubi0:rootfs rw rootwait"
 
 #define CONFIG_SYS_SDRAM_BASE		0x80000000	/* Cached addr */
 #define CONFIG_SYS_INIT_SP_OFFSET	0x400000

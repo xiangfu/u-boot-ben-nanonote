@@ -59,6 +59,9 @@ typedef	struct	global_data {
 	unsigned long	env_valid;	/* Checksum of Environment valid? */
 	void		**jt;		/* jump table */
 	char		env_buf[32];	/* buffer for getenv() before reloc. */
+#if defined(CONFIG_NANONOTE)
+        unsigned long   boot_option;
+#endif
 } gd_t;
 
 #include <asm-generic/global_data_flags.h>
