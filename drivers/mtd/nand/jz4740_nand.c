@@ -15,6 +15,9 @@
 #include <asm/io.h>
 #include <asm/jz4740.h>
 
+#ifdef CONFIG_SPL_BUILD
+#define printf(s) puts(s)
+#endif
 #define JZ_NAND_DATA_ADDR ((void __iomem *)0xB8000000)
 #define JZ_NAND_CMD_ADDR (JZ_NAND_DATA_ADDR + 0x8000)
 #define JZ_NAND_ADDR_ADDR (JZ_NAND_DATA_ADDR + 0x10000)
@@ -176,7 +179,7 @@ static int jz_nand_rs_correct_data(struct mtd_info *mtd, u_char *dat,
 		for (k = 0; k < 9; k++)
 			writeb(read_ecc[k], &emc->nfpar[k]);
 	}
-	/* Set PRDY */
+
 	writel(readl(&emc->nfecr) | EMC_NFECR_PRDY, &emc->nfecr);
 
 	/* Wait for completion */
@@ -184,7 +187,7 @@ static int jz_nand_rs_correct_data(struct mtd_info *mtd, u_char *dat,
 		status = readl(&emc->nfints);
 	} while (!(status & EMC_NFINTS_DECF));
 
-	/* disable ecc */
+	/* Disable ECC */
 	writel(readl(&emc->nfecr) & ~EMC_NFECR_ECCE, &emc->nfecr);
 
 	/* Check decoding */
@@ -192,7 +195,7 @@ static int jz_nand_rs_correct_data(struct mtd_info *mtd, u_char *dat,
 		return 0;
 
 	if (status & EMC_NFINTS_UNCOR) {
-		printf("uncorrectable ecc\n");
+		printf("JZ4740 uncorrectable ECC\n");
 		return -1;
 	}
 
@@ -230,6 +233,32 @@ static int jz_nand_rs_correct_data(struct mtd_info *mtd, u_char *dat,
 	return errcnt;
 }
 
+#ifdef CONFIG_SPL_BUILD
+static void jz_nand_read_buf(struct mtd_info *mtd, uint8_t *buf, int len)
+{
+	int i;
+	struct nand_chip *this = mtd->priv;
+
+#if (JZ4740_NANDBOOT_CFG == JZ4740_NANDBOOT_B16R3) || \
+	(JZ4740_NANDBOOT_CFG == JZ4740_NANDBOOT_B16R2)
+	for (i = 0; i < len; i += 2)
+		buf[i] = readw(this->IO_ADDR_R);
+#elif (JZ4740_NANDBOOT_CFG == JZ4740_NANDBOOT_B8R3) || \
+	(JZ4740_NANDBOOT_CFG == JZ4740_NANDBOOT_B8R2)
+	for (i = 0; i < len; i++)
+		buf[i] = readb(this->IO_ADDR_R);
+#else
+	#error JZ4740_NANDBOOT_CFG not defined or wrong
+#endif
+}
+
+static uint8_t jz_nand_read_byte(struct mtd_info *mtd)
+{
+	struct nand_chip *this = mtd->priv;
+	return readb(this->IO_ADDR_R);
+}
+#endif
+
 /*
  * Main initialization routine
  */
@@ -254,6 +283,10 @@ int board_nand_init(struct nand_chip *nand)
 	nand->ecc.size		= CONFIG_SYS_NAND_ECCSIZE;
 	nand->ecc.bytes		= CONFIG_SYS_NAND_ECCBYTES;
 	nand->ecc.layout	= &qi_lb60_ecclayout_2gb;
+#ifdef CONFIG_SPL_BUILD
+	nand->read_byte		= jz_nand_read_byte;
+	nand->read_buf		= jz_nand_read_buf;
+#endif
 	nand->chip_delay	= 50;
 	nand->options		= NAND_USE_FLASH_BBT;
 

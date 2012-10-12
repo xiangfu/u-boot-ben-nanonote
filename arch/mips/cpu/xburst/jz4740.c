@@ -32,31 +32,19 @@ int disable_interrupts(void)
 	return 0;
 }
 
-/*
- * PLL output clock = EXTAL * NF / (NR * NO)
- * NF = FD + 2, NR = RD + 2
- * NO = 1 (if OD = 0), NO = 2 (if OD = 1 or 2), NO = 4 (if OD = 3)
- */
 void pll_init(void)
 {
 	struct jz4740_cpm *cpm = (struct jz4740_cpm *)JZ4740_CPM_BASE;
 
-	register unsigned int cfcr, plcr1;
-	int n2FR[33] = {
-		0, 0, 1, 2, 3, 0, 4, 0, 5, 0, 0, 0, 6, 0, 0, 0,
-		7, 0, 0, 0, 0, 0, 0, 0, 8, 0, 0, 0, 0, 0, 0, 0,
-		9
-	};
-	int div[5] = {1, 3, 3, 3, 3}; /* divisors of I:S:P:L:M */
-	int nf, pllout2;
+	register unsigned int cfcr, plcr;
+	unsigned int nf, pllout2;
 
 	cfcr =	CPM_CPCCR_CLKOEN |
-		CPM_CPCCR_PCS |
-		(n2FR[div[0]] << CPM_CPCCR_CDIV_BIT) |
-		(n2FR[div[1]] << CPM_CPCCR_HDIV_BIT) |
-		(n2FR[div[2]] << CPM_CPCCR_PDIV_BIT) |
-		(n2FR[div[3]] << CPM_CPCCR_MDIV_BIT) |
-		(n2FR[div[4]] << CPM_CPCCR_LDIV_BIT);
+		(0 << CPM_CPCCR_CDIV_BIT) |
+		(2 << CPM_CPCCR_HDIV_BIT) |
+		(2 << CPM_CPCCR_PDIV_BIT) |
+		(2 << CPM_CPCCR_MDIV_BIT) |
+		(2 << CPM_CPCCR_LDIV_BIT);
 
 	pllout2 = (cfcr & CPM_CPCCR_PCS) ?
 		CONFIG_SYS_CPU_SPEED : (CONFIG_SYS_CPU_SPEED / 2);
@@ -65,15 +53,18 @@ void pll_init(void)
 	writel(pllout2 / 48000000 - 1, &cpm->uhccdr);
 
 	nf = CONFIG_SYS_CPU_SPEED * 2 / CONFIG_SYS_EXTAL;
-	plcr1 = ((nf - 2) << CPM_CPPCR_PLLM_BIT) | /* FD */
+	plcr = ((nf - 2) << CPM_CPPCR_PLLM_BIT) | /* FD */
 		(0 << CPM_CPPCR_PLLN_BIT) |	/* RD=0, NR=2 */
 		(0 << CPM_CPPCR_PLLOD_BIT) |	/* OD=0, NO=1 */
-		(0x20 << CPM_CPPCR_PLLST_BIT) |	/* PLL stable time */
+		(0x32 << CPM_CPPCR_PLLST_BIT) |	/* PLL stable time */
 		CPM_CPPCR_PLLEN;		/* enable PLL */
 
 	/* init PLL */
 	writel(cfcr, &cpm->cpccr);
-	writel(plcr1, &cpm->cppcr);
+	writel(plcr, &cpm->cppcr);
+
+	while (!(readl(&cpm->cppcr) & CPM_CPPCR_PLLS))
+		;
 }
 
 void sdram_init(void)
@@ -92,25 +83,11 @@ void sdram_init(void)
 		2 << EMC_DMCR_TCL_BIT	/* CAS latency is 3 */
 	};
 
-	int div[] = {1, 2, 3, 4, 6, 8, 12, 16, 24, 32};
-
 	cpu_clk = CONFIG_SYS_CPU_SPEED;
-	mem_clk = cpu_clk * div[__cpm_get_cdiv()] / div[__cpm_get_mdiv()];
+	mem_clk = 84000000;
 
 	writel(0, &emc->bcr);	/* Disable bus release */
 	writew(0, &emc->rtcsr);	/* Disable clock for counting */
-
-	/* Fault DMCR value for mode register setting*/
-#define SDRAM_ROW0	11
-#define SDRAM_COL0	8
-#define SDRAM_BANK40	0
-
-	dmcr0 = ((SDRAM_ROW0 - 11) << EMC_DMCR_RA_BIT) |
-		((SDRAM_COL0 - 8) << EMC_DMCR_CA_BIT) |
-		(SDRAM_BANK40 << EMC_DMCR_BA_BIT) |
-		(SDRAM_BW16 << EMC_DMCR_BW_BIT) |
-		EMC_DMCR_EPIN |
-		cas_latency_dmcr[((SDRAM_CASL == 3) ? 1 : 0)];
 
 	/* Basic DMCR value */
 	dmcr = ((SDRAM_ROW - 11) << EMC_DMCR_RA_BIT) |
@@ -128,36 +105,36 @@ void sdram_init(void)
 	if (tmp > 11)
 		tmp = 11;
 	dmcr |= (tmp - 4) << EMC_DMCR_TRAS_BIT;
-	tmp = SDRAM_RCD / ns;
 
+	tmp = SDRAM_RCD / ns;
 	if (tmp > 3)
 		tmp = 3;
 	dmcr |= tmp << EMC_DMCR_RCD_BIT;
-	tmp = SDRAM_TPC / ns;
 
+	tmp = SDRAM_TPC / ns;
 	if (tmp > 7)
 		tmp = 7;
 	dmcr |= tmp << EMC_DMCR_TPC_BIT;
-	tmp = SDRAM_TRWL / ns;
 
+	tmp = SDRAM_TRWL / ns;
 	if (tmp > 3)
 		tmp = 3;
 	dmcr |= tmp << EMC_DMCR_TRWL_BIT;
-	tmp = (SDRAM_TRAS + SDRAM_TPC) / ns;
 
+	tmp = (SDRAM_TRAS + SDRAM_TPC) / ns;
 	if (tmp > 14)
 		tmp = 14;
 	dmcr |= ((tmp + 1) >> 1) << EMC_DMCR_TRC_BIT;
 
 	/* SDRAM mode value */
-	sdmode = EMC_SDMR_BT_SEQ |
-		 EMC_SDMR_OM_NORMAL |
-		 EMC_SDMR_BL_4 |
+	sdmode = EMC_SDMR_BT_SEQ	|
+		 EMC_SDMR_OM_NORMAL	|
+		 EMC_SDMR_BL_4		|
 		 cas_latency_sdmr[((SDRAM_CASL == 3) ? 1 : 0)];
 
 	/* Stage 1. Precharge all banks by writing SDMR with DMCR.MRSET=0 */
 	writel(dmcr, &emc->dmcr);
-	writeb(0, JZ4740_EMC_SDMR0 | sdmode);
+	writeb(0, JZ4740_EMC_SDMR0 + sdmode);
 
 	/* Wait for precharge, > 200us */
 	tmp = (cpu_clk / 1000000) * 1000;
@@ -172,8 +149,8 @@ void sdram_init(void)
 	if (tmp > 0xff)
 		tmp = 0xff;
 	writew(tmp, &emc->rtcor);
+
 	writew(0, &emc->rtcnt);
-	/* Divisor is 64, CKO/64 */
 	writew(EMC_RTCSR_CKS_64, &emc->rtcsr);
 
 	/* Wait for number of auto-refresh cycles */
@@ -182,13 +159,17 @@ void sdram_init(void)
 		;
 
 	/* Stage 3. Mode Register Set */
+	dmcr0 = (11 << EMC_DMCR_RA_BIT)	|
+		(8 << EMC_DMCR_CA_BIT)	|
+		(0 << EMC_DMCR_BA_BIT)	|
+		EMC_DMCR_EPIN		|
+		(SDRAM_BW16 << EMC_DMCR_BW_BIT) |
+		cas_latency_dmcr[((SDRAM_CASL == 3) ? 1 : 0)];
 	writel(dmcr0 | EMC_DMCR_RFSH | EMC_DMCR_MRSET, &emc->dmcr);
 	writeb(0, JZ4740_EMC_SDMR0 | sdmode);
 
 	/* Set back to basic DMCR value */
 	writel(dmcr | EMC_DMCR_RFSH | EMC_DMCR_MRSET, &emc->dmcr);
-
-	/* everything is ok now */
 }
 
 DECLARE_GLOBAL_DATA_PTR;
@@ -232,9 +213,10 @@ void rtc_init(void)
 phys_size_t initdram(int board_type)
 {
 	struct jz4740_emc *emc = (struct jz4740_emc *)JZ4740_EMC_BASE;
-	u32 dmcr;
-	u32 rows, cols, dw, banks;
-	ulong size;
+
+	unsigned int dmcr;
+	unsigned int rows, cols, dw, banks;
+	unsigned long size;
 
 	dmcr = readl(&emc->dmcr);
 	rows = 11 + ((dmcr & EMC_DMCR_RA_MASK) >> EMC_DMCR_RA_BIT);

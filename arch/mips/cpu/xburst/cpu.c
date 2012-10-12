@@ -42,6 +42,8 @@
 		:			\
 		: "i" (op), "R" (*(unsigned char *)(addr)))
 
+#ifndef CONFIG_SPL_BUILD
+
 void __attribute__((weak)) _machine_restart(void)
 {
 	struct jz4740_wdt *wdt = (struct jz4740_wdt *)JZ4740_WDT_BASE;
@@ -108,6 +110,8 @@ void invalidate_dcache_range(ulong start_addr, ulong stop)
 	for (; addr <= aend; addr += lsize)
 		cache_op(Hit_Invalidate_D, addr);
 }
+
+#endif
 
 void flush_icache_all(void)
 {

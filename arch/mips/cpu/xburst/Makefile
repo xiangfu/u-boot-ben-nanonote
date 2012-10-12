@@ -24,9 +24,12 @@ include $(TOPDIR)/config.mk
 
 LIB	= $(obj)lib$(CPU).o
 
+COBJS-y	= cpu.o jz_serial.o
+
+ifneq ($(CONFIG_SPL_BUILD),y)
 START	= start.o
-SOBJS-y	=
-COBJS-y	= cpu.o timer.o jz_serial.o
+COBJS-y += timer.o
+endif
 
 COBJS-$(CONFIG_JZ4740) += jz4740.o
 

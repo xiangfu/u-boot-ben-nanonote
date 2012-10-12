@@ -1,6 +1,8 @@
 #
-# (C) Copyright 2006
-# Ingenic Semiconductor, <jlwei@ingenic.cn>
+# Copyright (C) 2011 Xiangfu Liu <xiangfu@openmobilefree.net>
+#
+# See file CREDITS for list of people who contributed to this
+# project.
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -20,18 +22,19 @@
 
 include $(TOPDIR)/config.mk
 
-LIB	= $(obj)lib$(BOARD).o
+LIB	= $(obj)lib$(CPU).o
 
-ifeq ($(CONFIG_SPL_BUILD),y)
-COBJS	:= $(BOARD)-spl.o
-else
-COBJS	:= $(BOARD).o
-endif
+START	= start.o
+SOBJS-y	=
+COBJS-y	=
 
-SRCS	:= $(SOBJS:.o=.S) $(COBJS:.o=.c)
-OBJS	:= $(addprefix $(obj),$(SOBJS) $(COBJS))
+SRCS	:= $(START:.o=.S) $(SOBJS-y:.o=.S) $(COBJS-y:.o=.c)
+OBJS	:= $(addprefix $(obj),$(SOBJS-y) $(COBJS-y))
+START	:= $(addprefix $(obj),$(START))
 
-$(LIB):	$(obj).depend $(OBJS) $(SOBJS)
+all:	$(obj).depend $(START) $(LIB)
+
+$(LIB):	$(OBJS)
 	$(call cmd_link_o_target, $(OBJS))
 
 #########################################################################

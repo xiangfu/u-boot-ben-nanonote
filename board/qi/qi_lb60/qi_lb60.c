@@ -1,5 +1,5 @@
 /*
- * Authors: Xiangfu Liu <xiangfu@sharism.cc>
+ * Authors: Xiangfu Liu <xiangfu@openmobilefree.net>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -97,8 +97,10 @@ int board_early_init_f(void)
 /* U-Boot common routines */
 int checkboard(void)
 {
-	printf("Board: Qi LB60 (Ingenic XBurst Jz4740 SoC, Speed %ld MHz)\n",
-	       gd->cpu_clk / 1000000);
+	printf("Board: Qi LB60 (Ingenic XBurst Jz4740 SoC)\n");
+	printf(" CPU: %ld\n", gd->cpu_clk);
+	printf(" MEM: %ld\n", gd->mem_clk);
+	printf(" DEV: %ld\n", gd->dev_clk);
 
 	return 0;
 }

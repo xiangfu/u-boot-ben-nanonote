@@ -393,6 +393,10 @@ ALL-y += $(obj)u-boot-nodtb-tegra.bin
 endif
 endif
 
+ifeq ($(CPU),xburst)
+ALL-y += $(obj)u-boot-xburst.bin
+endif
+
 all:		$(ALL-y) $(SUBDIR_EXAMPLES)
 
 $(obj)u-boot.dtb:	$(obj)u-boot
@@ -504,6 +508,14 @@ $(obj)u-boot-nodtb-tegra.bin:	$(obj)spl/u-boot-spl.bin $(obj)u-boot.bin
 		cat $(obj)spl/u-boot-spl-pad.bin $(obj)u-boot.bin > $@
 		rm $(obj)spl/u-boot-spl-pad.bin
 endif
+endif
+
+ifeq ($(CPU),xburst)
+$(obj)u-boot-xburst.bin:	$(obj)spl/u-boot-spl.bin $(obj)u-boot.bin
+	        dd if=$(obj)spl/u-boot-spl.bin of=$(obj)spl/u-boot-pad.bin conv=sync bs=8192 count=1
+		dd if=$(obj)spl/u-boot-spl.bin of=$(obj)spl/u-boot-pad.bin conv=sync,notrunc oflag=append bs=8192 count=1
+	        tr '\0' '\377' < /dev/zero | dd of=$(obj)spl/u-boot-pad.bin conv=sync,notrunc oflag=append bs=16384 count=1
+	        cat $(obj)spl/u-boot-pad.bin u-boot.bin > $@
 endif
 
 ifeq ($(CONFIG_SANDBOX),y)
