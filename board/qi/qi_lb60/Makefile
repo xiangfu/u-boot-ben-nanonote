@@ -23,6 +23,7 @@ include $(TOPDIR)/config.mk
 LIB	= $(obj)lib$(BOARD).o
 
 ifeq ($(CONFIG_SPL_BUILD),y)
+SOBJS	:= usbboot.o
 COBJS	:= $(BOARD)-spl.o
 else
 COBJS	:= $(BOARD).o
